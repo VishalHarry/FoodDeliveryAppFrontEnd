@@ -2,9 +2,8 @@
 
 import { useState } from "react"
 import { X, Plus, Minus, ChevronUp, ChevronDown } from "lucide-react"
-
-import CheckoutModal from "./CheckoutModal"
 import { useCart } from "../context/CartContext"
+import CheckoutModal from "./CheckoutModal"
 
 const CartModal = ({ isOpen, onClose }) => {
   const [showCouponInput, setShowCouponInput] = useState(false)
@@ -14,11 +13,11 @@ const CartModal = ({ isOpen, onClose }) => {
 
   const { items, updateQuantity, removeFromCart, getTotalPrice } = useCart()
 
-  const handleQuantityChange = (id, newQuantity) => {
+  const handleQuantityChange = (cartId, newQuantity) => {
     if (newQuantity === 0) {
-      removeFromCart(id)
+      removeFromCart(cartId)
     } else {
-      updateQuantity(id, newQuantity)
+      updateQuantity(cartId, newQuantity)
     }
   }
 
@@ -61,7 +60,7 @@ const CartModal = ({ isOpen, onClose }) => {
               ) : (
                 <div className="space-y-4">
                   {items.map((item) => (
-                    <div key={item.id} className="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg">
+                    <div key={item.cartId} className="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg">
                       <img
                         src={item.image || "/placeholder.svg"}
                         alt={item.name}
@@ -69,27 +68,26 @@ const CartModal = ({ isOpen, onClose }) => {
                       />
                       <div className="flex-1">
                         <h3 className="font-medium text-gray-800">{item.name}</h3>
-                        <div className="flex items-center space-x-2 mt-1">
-                          <span className="text-sm text-gray-500 line-through">${item.originalPrice}</span>
-                          <span className="text-lg font-bold text-orange-500">${item.discountedPrice}</span>
-                        </div>
-                        <select className="mt-2 text-sm border border-gray-300 rounded px-2 py-1">
-                          <option>Regular</option>
-                          <option>Large</option>
-                          <option>Extra Large</option>
-                        </select>
+                        {item.variant && (
+                          <p className="text-sm text-gray-500">
+                            {Object.entries(item.variant)
+                              .map(([key, value]) => `${key}: ${value}`)
+                              .join(", ")}
+                          </p>
+                        )}
+                        <p className="text-orange-500 font-semibold">${item.discountedPrice}</p>
                       </div>
                       <div className="flex items-center space-x-2">
                         <button
-                          onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
-                          className="p-1 hover:bg-gray-200 rounded-full transition-colors duration-200"
+                          onClick={() => handleQuantityChange(item.cartId, item.quantity - 1)}
+                          className="w-8 h-8 border border-gray-300 rounded-full flex items-center justify-center hover:bg-gray-100 transition-colors duration-200"
                         >
                           <Minus className="w-4 h-4" />
                         </button>
                         <span className="w-8 text-center font-medium">{item.quantity}</span>
                         <button
-                          onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
-                          className="p-1 hover:bg-gray-200 rounded-full transition-colors duration-200"
+                          onClick={() => handleQuantityChange(item.cartId, item.quantity + 1)}
+                          className="w-8 h-8 border border-gray-300 rounded-full flex items-center justify-center hover:bg-gray-100 transition-colors duration-200"
                         >
                           <Plus className="w-4 h-4" />
                         </button>
@@ -98,25 +96,28 @@ const CartModal = ({ isOpen, onClose }) => {
                   ))}
                 </div>
               )}
+            </div>
 
-              {/* Coupon Section */}
-              {items.length > 0 && (
-                <div className="mt-6">
-                  {!showCouponInput ? (
-                    <button
-                      onClick={() => setShowCouponInput(true)}
-                      className="w-full py-3 border-2 border-dashed border-orange-300 text-orange-500 rounded-lg hover:bg-orange-50 transition-colors duration-200"
-                    >
-                      Apply Coupon
-                    </button>
-                  ) : (
-                    <div className="flex space-x-2 animate-in slide-in-from-top-2 duration-200">
+            {/* Footer */}
+            {items.length > 0 && (
+              <div className="border-t border-gray-200 p-6 space-y-4">
+                {/* Coupon Section */}
+                <div>
+                  <button
+                    onClick={() => setShowCouponInput(!showCouponInput)}
+                    className="flex items-center justify-between w-full text-left text-orange-500 font-medium"
+                  >
+                    <span>Apply Coupon</span>
+                    {showCouponInput ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                  </button>
+                  {showCouponInput && (
+                    <div className="mt-2 flex space-x-2">
                       <input
                         type="text"
                         value={couponCode}
                         onChange={(e) => setCouponCode(e.target.value)}
                         placeholder="Enter coupon code"
-                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                       />
                       <button
                         onClick={applyCoupon}
@@ -127,27 +128,18 @@ const CartModal = ({ isOpen, onClose }) => {
                     </div>
                   )}
                 </div>
-              )}
-            </div>
 
-            {/* Total and Pay Now */}
-            {items.length > 0 && (
-              <div className="border-t border-gray-200 p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center space-x-2">
-                    <span className="text-lg font-bold">Total: ${getTotalPrice().toFixed(2)}</span>
-                    <button
-                      onClick={() => setShowOrderSummary(!showOrderSummary)}
-                      className="p-1 hover:bg-gray-100 rounded-full transition-colors duration-200"
-                    >
-                      {showOrderSummary ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
-                    </button>
-                  </div>
-                </div>
-
-                {showOrderSummary && (
-                  <div className="mb-4 p-3 bg-gray-50 rounded-lg animate-in slide-in-from-top-2 duration-200">
-                    <div className="space-y-2 text-sm">
+                {/* Order Summary */}
+                <div>
+                  <button
+                    onClick={() => setShowOrderSummary(!showOrderSummary)}
+                    className="flex items-center justify-between w-full text-left font-medium text-gray-800"
+                  >
+                    <span>Order Summary</span>
+                    {showOrderSummary ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                  </button>
+                  {showOrderSummary && (
+                    <div className="mt-2 space-y-2 text-sm">
                       <div className="flex justify-between">
                         <span>Subtotal</span>
                         <span>${getTotalPrice().toFixed(2)}</span>
@@ -160,32 +152,33 @@ const CartModal = ({ isOpen, onClose }) => {
                         <span>Tax</span>
                         <span>${(getTotalPrice() * 0.08).toFixed(2)}</span>
                       </div>
-                      <hr className="my-2" />
-                      <div className="flex justify-between font-bold">
+                      <div className="border-t border-gray-200 pt-2 flex justify-between font-semibold">
                         <span>Total</span>
                         <span>${(getTotalPrice() + 2.99 + getTotalPrice() * 0.08).toFixed(2)}</span>
                       </div>
                     </div>
-                  </div>
-                )}
+                  )}
+                </div>
 
-                <button
-                  onClick={handlePayNow}
-                  className="w-full py-3 bg-gradient-to-r from-orange-500 to-red-500 text-white font-bold rounded-lg hover:from-orange-600 hover:to-red-600 transition-all duration-200 transform hover:scale-105"
-                >
-                  Pay Now
-                </button>
+                {/* Total and Pay Button */}
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center text-lg font-bold">
+                    <span>Total: ${(getTotalPrice() + 2.99 + getTotalPrice() * 0.08).toFixed(2)}</span>
+                  </div>
+                  <button
+                    onClick={handlePayNow}
+                    className="w-full bg-gradient-to-r from-orange-500 to-red-500 text-white py-3 rounded-lg font-semibold hover:from-orange-600 hover:to-red-600 transition-all duration-300 transform hover:scale-105"
+                  >
+                    Proceed to Checkout
+                  </button>
+                </div>
               </div>
             )}
           </div>
         </div>
       </div>
 
-      <CheckoutModal
-        isOpen={isCheckoutOpen}
-        onClose={() => setIsCheckoutOpen(false)}
-        cartTotal={getTotalPrice() + 2.99 + getTotalPrice() * 0.08}
-      />
+      <CheckoutModal isOpen={isCheckoutOpen} onClose={() => setIsCheckoutOpen(false)} />
     </>
   )
 }

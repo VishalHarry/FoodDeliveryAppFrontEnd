@@ -1,278 +1,387 @@
 "use client"
 
-import React, { useState } from "react"
-import { X, ChevronDown, ChevronUp, Truck } from "lucide-react"
+import { useState } from "react"
+import { X, MapPin, CreditCard, User, Phone, ArrowLeft, ArrowRight } from "lucide-react"
+import { useCart } from "../context/CartContext"
 
-import AuthModal from "./AuthModal"
-import { useAuth } from "../context/AuthProvider"
-
-const CheckoutModal = ({ isOpen, onClose, cartTotal }) => {
+const CheckoutModal = ({ isOpen, onClose }) => {
   const [currentStep, setCurrentStep] = useState(1)
-  const [showOrderSummary, setShowOrderSummary] = useState(false)
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
-  const [formData, setFormData] = useState({
-    fullName: "",
-    email: "",
-    mobile: "",
-    address: "",
-    landmark: "",
-    houseNumber: "",
-    city: "",
-    state: "",
+  const [orderData, setOrderData] = useState({
+    address: {
+      street: "",
+      city: "",
+      state: "",
+      zipCode: "",
+      instructions: "",
+    },
+    payment: {
+      method: "card",
+      cardNumber: "",
+      expiryDate: "",
+      cvv: "",
+      nameOnCard: "",
+    },
+    contact: {
+      name: "",
+      phone: "",
+      email: "",
+    },
+    otp: "",
   })
 
-  const { isAuthenticated } = useAuth()
+  const { items, getTotalPrice, clearCart } = useCart()
 
-  const handleInputChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    })
+  const handleInputChange = (section, field, value) => {
+    setOrderData((prev) => ({
+      ...prev,
+      [section]: {
+        ...prev[section],
+        [field]: value,
+      },
+    }))
   }
 
-  const handleContinue = () => {
-    if (!isAuthenticated && currentStep === 1) {
-      setIsAuthModalOpen(true)
-      return
-    }
-
-    if (currentStep < 3) {
+  const handleNext = () => {
+    if (currentStep < 4) {
       setCurrentStep(currentStep + 1)
     }
   }
 
+  const handlePrevious = () => {
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1)
+    }
+  }
+
+  const handlePlaceOrder = () => {
+    // Simulate order placement
+    alert("Order placed successfully!")
+    clearCart()
+    onClose()
+    setCurrentStep(1)
+  }
+
   const steps = [
-    { number: 1, title: "Mobile Number", active: currentStep >= 1 },
-    { number: 2, title: "Address", active: currentStep >= 2 },
-    { number: 3, title: "Payment", active: currentStep >= 3 },
+    { number: 1, title: "Address", icon: MapPin },
+    { number: 2, title: "Payment", icon: CreditCard },
+    { number: 3, title: "Contact", icon: User },
+    { number: 4, title: "Confirm", icon: Phone },
   ]
 
   if (!isOpen) return null
 
   return (
-    <>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div className="absolute inset-0 bg-black bg-opacity-50" onClick={onClose} />
-        <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden animate-in zoom-in-95 duration-300">
+    <div className="fixed inset-0 z-50 overflow-hidden">
+      <div className="absolute inset-0 bg-black bg-opacity-50" onClick={onClose} />
+      <div className="absolute inset-0 flex items-center justify-center p-4">
+        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden animate-in zoom-in duration-300">
           {/* Header */}
           <div className="flex items-center justify-between p-6 border-b border-gray-200">
-            <div className="flex items-center space-x-4">
-              <div className="w-10 h-10 bg-gradient-to-r from-orange-400 to-red-500 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold">F</span>
-              </div>
-
-              {/* Progress Indicator */}
-              <div className="flex items-center space-x-2">
-                {steps.map((step, index) => (
-                  <React.Fragment key={step.number}>
-                    <div className={`flex items-center space-x-2 ${step.active ? "text-orange-500" : "text-gray-400"}`}>
-                      <div
-                        className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
-                          step.active ? "bg-orange-500 text-white" : "bg-gray-200 text-gray-500"
-                        }`}
-                      >
-                        {step.number}
-                      </div>
-                      <span className="text-sm font-medium">{step.title}</span>
-                    </div>
-                    {index < steps.length - 1 && (
-                      <div className={`w-8 h-0.5 ${step.active ? "bg-orange-500" : "bg-gray-200"}`} />
-                    )}
-                  </React.Fragment>
-                ))}
-              </div>
-            </div>
-
+            <h2 className="text-2xl font-bold text-gray-800">Checkout</h2>
             <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full transition-colors duration-200">
               <X className="w-5 h-5" />
             </button>
           </div>
 
-          {/* Content */}
-          <div className="p-6 overflow-y-auto max-h-[calc(90vh-200px)]">
-            {/* Order Summary Header */}
-            <div className="mb-6">
-              <button
-                onClick={() => setShowOrderSummary(!showOrderSummary)}
-                className="flex items-center justify-between w-full p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200"
-              >
-                <h3 className="text-lg font-bold text-gray-800">Order Summary</h3>
-                {showOrderSummary ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
-              </button>
-
-              {showOrderSummary && (
-                <div className="mt-4 p-4 bg-gray-50 rounded-lg animate-in slide-in-from-top-2 duration-200">
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span>Subtotal</span>
-                      <span>${(cartTotal - 2.99 - (cartTotal - 2.99) * 0.08).toFixed(2)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Delivery Fee</span>
-                      <span>$2.99</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Tax</span>
-                      <span>${((cartTotal - 2.99) * 0.08).toFixed(2)}</span>
-                    </div>
-                    <hr className="my-2" />
-                    <div className="flex justify-between font-bold text-lg">
-                      <span>Total</span>
-                      <span>${cartTotal.toFixed(2)}</span>
-                    </div>
+          {/* Progress Steps */}
+          <div className="px-6 py-4 border-b border-gray-200">
+            <div className="flex items-center justify-between">
+              {steps.map((step, index) => (
+                <div key={step.number} className="flex items-center">
+                  <div
+                    className={`flex items-center justify-center w-10 h-10 rounded-full border-2 transition-all duration-300 ${
+                      currentStep >= step.number
+                        ? "bg-orange-500 border-orange-500 text-white"
+                        : "border-gray-300 text-gray-400"
+                    }`}
+                  >
+                    <step.icon className="w-5 h-5" />
                   </div>
+                  <span
+                    className={`ml-2 text-sm font-medium ${
+                      currentStep >= step.number ? "text-orange-500" : "text-gray-400"
+                    }`}
+                  >
+                    {step.title}
+                  </span>
+                  {index < steps.length - 1 && (
+                    <div className={`w-8 h-0.5 mx-4 ${currentStep > step.number ? "bg-orange-500" : "bg-gray-300"}`} />
+                  )}
                 </div>
-              )}
+              ))}
             </div>
+          </div>
 
-            {/* Authentication Step */}
-            {!isAuthenticated && currentStep === 1 && (
-              <div className="text-center py-8">
-                <h3 className="text-xl font-bold mb-4">Please Login to Continue</h3>
-                <p className="text-gray-600 mb-6">We need to verify your mobile number to process your order</p>
-                <button
-                  onClick={() => setIsAuthModalOpen(true)}
-                  className="px-8 py-3 bg-gradient-to-r from-orange-500 to-red-500 text-white font-bold rounded-lg hover:from-orange-600 hover:to-red-600 transition-all duration-200"
-                >
-                  Login with Mobile Number
-                </button>
-              </div>
-            )}
-
-            {/* Address Form */}
-            {(isAuthenticated || currentStep >= 2) && (
-              <div className="space-y-4">
-                <h3 className="text-xl font-bold mb-4">Delivery Address</h3>
-
+          {/* Content */}
+          <div className="p-6 overflow-y-auto max-h-96">
+            {/* Step 1: Address */}
+            {currentStep === 1 && (
+              <div className="space-y-4 animate-in slide-in-from-right duration-300">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">Delivery Address</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Street Address</label>
                     <input
                       type="text"
-                      name="fullName"
-                      value={formData.fullName}
-                      onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all duration-200"
-                      placeholder="Enter your full name"
+                      value={orderData.address.street}
+                      onChange={(e) => handleInputChange("address", "street", e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                      placeholder="Enter your street address"
                     />
                   </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
-                    <input
-                      type="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all duration-200"
-                      placeholder="Enter your email"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Mobile Number</label>
-                    <input
-                      type="tel"
-                      name="mobile"
-                      value={formData.mobile}
-                      onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all duration-200"
-                      placeholder="Enter your mobile number"
-                    />
-                  </div>
-
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">City</label>
                     <input
                       type="text"
-                      name="city"
-                      value={formData.city}
-                      onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all duration-200"
-                      placeholder="Enter your city"
+                      value={orderData.address.city}
+                      onChange={(e) => handleInputChange("address", "city", e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                      placeholder="City"
                     />
                   </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Complete Address</label>
-                  <textarea
-                    name="address"
-                    value={formData.address}
-                    onChange={handleInputChange}
-                    rows={3}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all duration-200"
-                    placeholder="Enter your complete address"
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Landmark</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">State</label>
                     <input
                       type="text"
-                      name="landmark"
-                      value={formData.landmark}
-                      onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all duration-200"
-                      placeholder="Nearby landmark"
+                      value={orderData.address.state}
+                      onChange={(e) => handleInputChange("address", "state", e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                      placeholder="State"
                     />
                   </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">House Number & Street</label>
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">ZIP Code</label>
                     <input
                       type="text"
-                      name="houseNumber"
-                      value={formData.houseNumber}
-                      onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all duration-200"
-                      placeholder="House number and street name"
+                      value={orderData.address.zipCode}
+                      onChange={(e) => handleInputChange("address", "zipCode", e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                      placeholder="ZIP Code"
+                    />
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Delivery Instructions (Optional)
+                    </label>
+                    <textarea
+                      value={orderData.address.instructions}
+                      onChange={(e) => handleInputChange("address", "instructions", e.target.value)}
+                      rows={3}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                      placeholder="Any special instructions for delivery..."
                     />
                   </div>
                 </div>
+              </div>
+            )}
 
-                {/* Shipping Method */}
-                <div className="mt-6">
-                  <h4 className="text-lg font-bold mb-4">Shipping Method</h4>
-                  <div className="border border-gray-300 rounded-lg p-4 bg-green-50 ">
-                    <div className="flex items-center space-x-3">
-                      <Truck className="w-6 h-6 text-green-600" />
-                      <div className="flex-1">
-                        <div className="flex items-center space-x-2">
-                          <span className="font-medium">Free Shipping</span>
-                          <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">Free</span>
-                        </div>
-                        <p className="text-sm text-gray-600">Earliest Delivery by 5 Jul, 9 AM</p>
+            {/* Step 2: Payment */}
+            {currentStep === 2 && (
+              <div className="space-y-4 animate-in slide-in-from-right duration-300">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">Payment Method</h3>
+                <div className="space-y-4">
+                  <div className="flex space-x-4">
+                    <label className="flex items-center">
+                      <input
+                        type="radio"
+                        name="paymentMethod"
+                        value="card"
+                        checked={orderData.payment.method === "card"}
+                        onChange={(e) => handleInputChange("payment", "method", e.target.value)}
+                        className="text-orange-500 focus:ring-orange-500"
+                      />
+                      <span className="ml-2">Credit/Debit Card</span>
+                    </label>
+                    <label className="flex items-center">
+                      <input
+                        type="radio"
+                        name="paymentMethod"
+                        value="cash"
+                        checked={orderData.payment.method === "cash"}
+                        onChange={(e) => handleInputChange("payment", "method", e.target.value)}
+                        className="text-orange-500 focus:ring-orange-500"
+                      />
+                      <span className="ml-2">Cash on Delivery</span>
+                    </label>
+                  </div>
+
+                  {orderData.payment.method === "card" && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="md:col-span-2">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Name on Card</label>
+                        <input
+                          type="text"
+                          value={orderData.payment.nameOnCard}
+                          onChange={(e) => handleInputChange("payment", "nameOnCard", e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                          placeholder="John Doe"
+                        />
+                      </div>
+                      <div className="md:col-span-2">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Card Number</label>
+                        <input
+                          type="text"
+                          value={orderData.payment.cardNumber}
+                          onChange={(e) => handleInputChange("payment", "cardNumber", e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                          placeholder="1234 5678 9012 3456"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Expiry Date</label>
+                        <input
+                          type="text"
+                          value={orderData.payment.expiryDate}
+                          onChange={(e) => handleInputChange("payment", "expiryDate", e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                          placeholder="MM/YY"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">CVV</label>
+                        <input
+                          type="text"
+                          value={orderData.payment.cvv}
+                          onChange={(e) => handleInputChange("payment", "cvv", e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                          placeholder="123"
+                        />
                       </div>
                     </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Step 3: Contact */}
+            {currentStep === 3 && (
+              <div className="space-y-4 animate-in slide-in-from-right duration-300">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">Contact Information</h3>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+                    <input
+                      type="text"
+                      value={orderData.contact.name}
+                      onChange={(e) => handleInputChange("contact", "name", e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                      placeholder="Enter your full name"
+                    />
                   </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
+                    <input
+                      type="tel"
+                      value={orderData.contact.phone}
+                      onChange={(e) => handleInputChange("contact", "phone", e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                      placeholder="Enter your phone number"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+                    <input
+                      type="email"
+                      value={orderData.contact.email}
+                      onChange={(e) => handleInputChange("contact", "email", e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                      placeholder="Enter your email address"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Step 4: Confirmation */}
+            {currentStep === 4 && (
+              <div className="space-y-6 animate-in slide-in-from-right duration-300">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">Order Confirmation</h3>
+
+                {/* Order Summary */}
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <h4 className="font-medium text-gray-800 mb-3">Order Items</h4>
+                  <div className="space-y-2">
+                    {items.map((item) => (
+                      <div key={item.cartId} className="flex justify-between text-sm">
+                        <span>
+                          {item.name} x {item.quantity}
+                        </span>
+                        <span>${(item.discountedPrice * item.quantity).toFixed(2)}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="border-t border-gray-200 mt-3 pt-3">
+                    <div className="flex justify-between text-sm">
+                      <span>Subtotal</span>
+                      <span>${getTotalPrice().toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span>Delivery Fee</span>
+                      <span>$2.99</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span>Tax</span>
+                      <span>${(getTotalPrice() * 0.08).toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between font-semibold text-lg mt-2 pt-2 border-t border-gray-200">
+                      <span>Total</span>
+                      <span>${(getTotalPrice() + 2.99 + getTotalPrice() * 0.08).toFixed(2)}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* OTP Verification */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Enter OTP sent to {orderData.contact.phone}
+                  </label>
+                  <input
+                    type="text"
+                    value={orderData.otp}
+                    onChange={(e) => setOrderData((prev) => ({ ...prev, otp: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    placeholder="Enter 6-digit OTP"
+                    maxLength={6}
+                  />
+                  <button className="text-orange-500 text-sm mt-2 hover:underline">Resend OTP</button>
                 </div>
               </div>
             )}
           </div>
 
           {/* Footer */}
-          <div className="border-t border-gray-200 p-6">
+          <div className="flex items-center justify-between p-6 border-t border-gray-200">
             <button
-              onClick={handleContinue}
-              className="w-full py-3 bg-gradient-to-r from-orange-500 to-red-500 text-white font-bold rounded-lg hover:from-orange-600 hover:to-red-600 transition-all duration-200 transform hover:scale-105"
+              onClick={handlePrevious}
+              disabled={currentStep === 1}
+              className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+                currentStep === 1 ? "text-gray-400 cursor-not-allowed" : "text-gray-700 hover:bg-gray-100"
+              }`}
             >
-              Continue
+              <ArrowLeft className="w-4 h-4" />
+              <span>Previous</span>
             </button>
+
+            {currentStep < 4 ? (
+              <button
+                onClick={handleNext}
+                className="flex items-center space-x-2 bg-gradient-to-r from-orange-500 to-red-500 text-white px-6 py-2 rounded-lg font-medium hover:from-orange-600 hover:to-red-600 transition-all duration-300"
+              >
+                <span>Next</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            ) : (
+              <button
+                onClick={handlePlaceOrder}
+                className="bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-2 rounded-lg font-medium hover:from-green-600 hover:to-green-700 transition-all duration-300"
+              >
+                Place Order
+              </button>
+            )}
           </div>
         </div>
       </div>
-
-      <AuthModal
-        isOpen={isAuthModalOpen}
-        onClose={() => setIsAuthModalOpen(false)}
-        onSuccess={() => {
-          setIsAuthModalOpen(false)
-          setCurrentStep(2)
-        }}
-      />
-    </>
+    </div>
   )
 }
 

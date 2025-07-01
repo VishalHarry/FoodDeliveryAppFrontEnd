@@ -2,14 +2,11 @@
 
 import { useState, useRef, useEffect } from "react"
 import { Search, User, ShoppingCart, ChevronDown, X } from "lucide-react"
+import { Link, useNavigate } from "react-router-dom"
+import { useCart } from "../context/CartContext"
+import { useAuth } from "../context/AuthProvider"
 import CartModal from "./CartModal"
 import AuthModal from "./AuthModal"
-import { useAuth } from "../context/AuthProvider"
-import { useCart } from "../context/CartContext"
-
-// import CartModal from "./CartModal"
-// import AuthModal from "./AuthModal"
-// import { useAuth } from "../context/AuthProvider"
 
 const Navbar = () => {
   const [isCategoryOpen, setIsCategoryOpen] = useState(false)
@@ -21,24 +18,26 @@ const Navbar = () => {
 
   const { getTotalItems } = useCart()
   const { isAuthenticated, logout } = useAuth()
+  const navigate = useNavigate()
 
   const categoryRef = useRef(null)
   const moreRef = useRef(null)
   const userRef = useRef(null)
 
   const categories = [
-    { id: 1, name: "Pizza", image: "/placeholder.svg?height=40&width=40" },
-    { id: 2, name: "Burgers", image: "/placeholder.svg?height=40&width=40" },
-    { id: 3, name: "Pasta", image: "/placeholder.svg?height=40&width=40" },
-    { id: 4, name: "Sushi", image: "/placeholder.svg?height=40&width=40" },
-    { id: 5, name: "Desserts", image: "/placeholder.svg?height=40&width=40" },
-    { id: 6, name: "Beverages", image: "/placeholder.svg?height=40&width=40" },
+    { id: 1, name: "Pizza", image: "/placeholder.svg?height=40&width=40", slug: "pizza" },
+    { id: 2, name: "Burgers", image: "/placeholder.svg?height=40&width=40", slug: "burgers" },
+    { id: 3, name: "Pasta", image: "/placeholder.svg?height=40&width=40", slug: "pasta" },
+    { id: 4, name: "Sushi", image: "/placeholder.svg?height=40&width=40", slug: "sushi" },
+    { id: 5, name: "Desserts", image: "/placeholder.svg?height=40&width=40", slug: "desserts" },
+    { id: 6, name: "Beverages", image: "/placeholder.svg?height=40&width=40", slug: "beverages" },
   ]
 
   const moreLinks = [
     { name: "About", href: "/about" },
     { name: "Contact", href: "/contact" },
     { name: "Privacy & Policy", href: "/privacy" },
+    { name: "Blogs", href: "/blogs" },
   ]
 
   useEffect(() => {
@@ -71,6 +70,11 @@ const Navbar = () => {
     setIsUserOpen(false)
   }
 
+  const handleCategoryClick = (categorySlug) => {
+    navigate(`/category/${categorySlug}`)
+    setIsCategoryOpen(false)
+  }
+
   return (
     <>
       <header className="sticky top-0 z-50 bg-white shadow-lg border-b border-gray-100">
@@ -78,12 +82,12 @@ const Navbar = () => {
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
             <div className="flex-shrink-0">
-              <div className="flex items-center">
+              <Link to="/" className="flex items-center">
                 <div className="w-10 h-10 bg-gradient-to-r from-orange-400 to-red-500 rounded-lg flex items-center justify-center">
                   <span className="text-white font-bold text-lg">F</span>
                 </div>
                 <span className="ml-2 text-xl font-bold text-gray-800">FoodieApp</span>
-              </div>
+              </Link>
             </div>
 
             {/* Navigation */}
@@ -103,10 +107,10 @@ const Navbar = () => {
                 {isCategoryOpen && (
                   <div className="absolute top-full left-0 mt-2 w-64 bg-white rounded-lg shadow-xl border border-gray-100 py-2 animate-in slide-in-from-top-2 duration-200">
                     {categories.map((category) => (
-                      <a
+                      <button
                         key={category.id}
-                        href={`/category/${category.name.toLowerCase()}`}
-                        className="flex items-center space-x-3 px-4 py-3 hover:bg-gray-50 transition-colors duration-150"
+                        onClick={() => handleCategoryClick(category.slug)}
+                        className="flex items-center space-x-3 px-4 py-3 hover:bg-gray-50 transition-colors duration-150 w-full text-left"
                       >
                         <img
                           src={category.image || "/placeholder.svg"}
@@ -114,7 +118,7 @@ const Navbar = () => {
                           className="w-8 h-8 rounded-full object-cover"
                         />
                         <span className="text-gray-700 hover:text-orange-500">{category.name}</span>
-                      </a>
+                      </button>
                     ))}
                   </div>
                 )}
@@ -135,13 +139,14 @@ const Navbar = () => {
                 {isMoreOpen && (
                   <div className="absolute top-full left-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-100 py-2 animate-in slide-in-from-top-2 duration-200">
                     {moreLinks.map((link) => (
-                      <a
+                      <Link
                         key={link.name}
-                        href={link.href}
+                        to={link.href}
                         className="block px-4 py-3 text-gray-700 hover:bg-gray-50 hover:text-orange-500 transition-colors duration-150"
+                        onClick={() => setIsMoreOpen(false)}
                       >
                         {link.name}
-                      </a>
+                      </Link>
                     ))}
                   </div>
                 )}
@@ -191,12 +196,13 @@ const Navbar = () => {
                       </button>
                     ) : (
                       <>
-                        <a
-                          href="/account"
+                        <Link
+                          to="/account"
                           className="block px-4 py-3 text-gray-700 hover:bg-gray-50 hover:text-orange-500 transition-colors duration-150"
+                          onClick={() => setIsUserOpen(false)}
                         >
                           My Account
-                        </a>
+                        </Link>
                         <button
                           onClick={() => handleUserAction("logout")}
                           className="block w-full text-left px-4 py-3 text-gray-700 hover:bg-gray-50 hover:text-orange-500 transition-colors duration-150"
@@ -228,8 +234,18 @@ const Navbar = () => {
         {/* Mobile Menu */}
         <div className="md:hidden px-4 pb-4">
           <div className="flex space-x-4">
-            <button className="flex-1 text-center py-2 text-gray-700 hover:text-orange-500">Categories</button>
-            <button className="flex-1 text-center py-2 text-gray-700 hover:text-orange-500">More</button>
+            <button
+              onClick={() => setIsCategoryOpen(!isCategoryOpen)}
+              className="flex-1 text-center py-2 text-gray-700 hover:text-orange-500"
+            >
+              Categories
+            </button>
+            <button
+              onClick={() => setIsMoreOpen(!isMoreOpen)}
+              className="flex-1 text-center py-2 text-gray-700 hover:text-orange-500"
+            >
+              More
+            </button>
           </div>
         </div>
       </header>
