@@ -16,7 +16,7 @@ export default function LoginPage() {
     e.preventDefault()
     // Simulate login
     localStorage.setItem("isAuthenticated", "true")
-    navigate("/dashboard")
+    navigate("/layout/dashboard")
   }
 
   return (
@@ -69,13 +69,13 @@ export default function LoginPage() {
           </div>
 
           <div className="flex items-center justify-between">
-            <label className="flex items-center">
+            {/* <label className="flex items-center">
               <input type="checkbox" className="rounded border-neutral text-primary focus:ring-primary" />
               <span className="ml-2 text-sm text-gray-600">Remember me</span>
             </label>
             <a href="#" className="text-sm text-primary hover:text-primary-dark">
               Forgot password?
-            </a>
+            </a> */}
           </div>
 
           <button

@@ -15,13 +15,13 @@ import {
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { name: "Menu", href: "/menu", icon: UtensilsCrossed },
-  { name: "Orders", href: "/orders", icon: ShoppingBag },
-  { name: "Customers", href: "/customers", icon: Users },
-  { name: "Discounts", href: "/discounts", icon: Percent },
-  { name: "Reports", href: "/reports", icon: BarChart3 },
-  { name: "Settings", href: "/settings", icon: Settings },
-  { name: "Profile", href: "/profile", icon: User },
+  { name: "Menu", href: "/layout/menu", icon: UtensilsCrossed },
+  { name: "Orders", href: "/layout/orders", icon: ShoppingBag },
+  { name: "Customers", href: "/layout/customers", icon: Users },
+  { name: "Discounts", href: "/layout/discounts", icon: Percent },
+  { name: "Reports", href: "/layout/reports", icon: BarChart3 },
+  { name: "Settings", href: "/layout/settings", icon: Settings },
+  { name: "Profile", href: "/layout/profile", icon: User },
 ]
 
 export default function Sidebar({ sidebarOpen, setSidebarOpen }) {

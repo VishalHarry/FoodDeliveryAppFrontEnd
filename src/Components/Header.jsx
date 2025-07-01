@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { Menu, Bell, Search, ChevronDown } from "lucide-react"
+import LiveDateTime from "./LiveDateTime"
 
 export default function Header({ setSidebarOpen }) {
   const [showNotifications, setShowNotifications] = useState(false)
@@ -21,14 +22,15 @@ export default function Header({ setSidebarOpen }) {
             <Menu className="w-6 h-6" />
           </button>
           <div className="hidden md:flex items-center ml-4">
-            <div className="relative">
+            {/* <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <input
                 type="text"
                 placeholder="Search orders, customers..."
                 className="pl-10 pr-4 py-2 border border-neutral rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent w-80"
               />
-            </div>
+            </div> */}
+               <LiveDateTime />
           </div>
         </div>
 

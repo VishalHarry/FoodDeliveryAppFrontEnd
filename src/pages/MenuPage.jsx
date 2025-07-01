@@ -438,6 +438,8 @@ export default function MenuPage() {
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div> */}
+         
+
             <select
               className="border border-neutral rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary focus:border-transparent"
               value={selectedCategory}
