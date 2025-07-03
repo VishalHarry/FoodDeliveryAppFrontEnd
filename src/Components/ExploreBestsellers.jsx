@@ -1,47 +1,37 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Play, Pause } from "lucide-react"
 import { useCart } from "../context/CartContext"
+import axios from "axios"
+import { useNavigate } from "react-router-dom"
 
 const ExploreBestsellers = () => {
   const [playingVideo, setPlayingVideo] = useState(null)
   const { addToCart } = useCart()
+  const [dishes, setDishes] = useState([])
+  const navigate=useNavigate();
 
-  const bestsellers = [
-    {
-      id: 1,
-      name: "Truffle Pasta",
-      image: "/placeholder.svg?height=300&width=300",
-      video: "/placeholder-video.mp4",
-      originalPrice: 24.99,
-      discountedPrice: 19.99,
-    },
-    {
-      id: 2,
-      name: "Wagyu Burger",
-      image: "/placeholder.svg?height=300&width=300",
-      video: "/placeholder-video.mp4",
-      originalPrice: 32.99,
-      discountedPrice: 27.99,
-    },
-    {
-      id: 3,
-      name: "Lobster Roll",
-      image: "/placeholder.svg?height=300&width=300",
-      video: "/placeholder-video.mp4",
-      originalPrice: 28.99,
-      discountedPrice: 23.99,
-    },
-    {
-      id: 4,
-      name: "Premium Sushi",
-      image: "/placeholder.svg?height=300&width=300",
-      video: "/placeholder-video.mp4",
-      originalPrice: 35.99,
-      discountedPrice: 29.99,
-    },
-  ]
+  
+  useEffect(()=>{
+    const fetchData= async ()=>{
+      try {
+        const response= await axios.get("http://localhost:8080/api/foods/getFoods")
+        if (response.data && response.data.length > 0) {
+          setDishes(response.data);
+          console.log("Dishes fetched successfully:", response.data);
+          
+        } else {
+          console.warn("No dishes found in the response");
+        }
+      } catch (error) {
+        console.error("Error fetching dishes:", error);
+        
+      }
+    }
+    fetchData();
+
+  },[])
 
   const handleVideoHover = (id) => {
     setPlayingVideo(id)
@@ -62,7 +52,7 @@ const ExploreBestsellers = () => {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-          {bestsellers.map((item, index) => (
+          {dishes.slice(0,4).map((item, index) => (
             <div
               key={item.id}
               className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 animate-in slide-in-from-bottom duration-1000"
@@ -74,7 +64,8 @@ const ExploreBestsellers = () => {
                 onMouseLeave={handleVideoLeave}
               >
                 {playingVideo === item.id ? (
-                  <div className="relative">
+                  <div className="relative"
+                  onClick={()=>navigate(`/product /${item.id}`)}>
                     <video className="w-full h-64 object-cover" autoPlay muted loop>
                       <source src={item.video} type="video/mp4" />
                     </video>
@@ -87,7 +78,7 @@ const ExploreBestsellers = () => {
                 ) : (
                   <div className="relative">
                     <img
-                      src={item.image || "/placeholder.svg"}
+                      src={item.imageUrl || "/placeholder.svg"}
                       alt={item.name}
                       className="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-500"
                     />
@@ -105,8 +96,8 @@ const ExploreBestsellers = () => {
                 </h3>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
-                    <span className="text-sm text-gray-500 line-through">${item.originalPrice}</span>
-                    <span className="text-xl font-bold text-orange-500">${item.discountedPrice}</span>
+                    <span className="text-sm text-gray-500 line-through">${item.price}</span>
+                    <span className="text-xl font-bold text-orange-500">${item.price-2}</span>
                   </div>
                   <button
                     onClick={() => addToCart(item)}

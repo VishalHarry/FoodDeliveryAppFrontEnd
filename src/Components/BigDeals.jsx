@@ -1,6 +1,9 @@
 "use client"
 import { Clock, Zap } from "lucide-react"
 import { useCart } from "../context/CartContext"
+import { useEffect, useState } from "react"
+import axios from "axios"
+import { useNavigate } from "react-router-dom"
 
 
 const BigDeals = () => {
@@ -49,6 +52,31 @@ const BigDeals = () => {
     },
   ]
 
+   const [dishes, setDishes] = useState([])
+  const navigate=useNavigate();
+
+  
+  useEffect(()=>{
+    const fetchData= async ()=>{
+      try {
+        const response= await axios.get("http://localhost:8080/api/foods/getFoods")
+        if (response.data && response.data.length > 0) {
+          setDishes(response.data);
+          console.log("Dishes fetched successfully:", response.data);
+          
+        } else {
+          console.warn("No dishes found in the response");
+        }
+      } catch (error) {
+        console.error("Error fetching dishes:", error);
+        
+      }
+    }
+    fetchData();
+
+  },[])
+
+
   return (
     <section className="py-16 bg-gradient-to-br from-red-50 via-orange-50 to-yellow-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -64,7 +92,7 @@ const BigDeals = () => {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-          {deals.map((deal, index) => (
+          {dishes.slice(0,4).map((deal, index) => (
             <div
               key={deal.id}
               className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-3 animate-in slide-in-from-bottom duration-1000 relative overflow-hidden"
@@ -87,7 +115,7 @@ const BigDeals = () => {
 
               <div className="relative overflow-hidden rounded-t-2xl">
                 <img
-                  src={deal.image || "/placeholder.svg"}
+                  src={deal.imageUrl || "/placeholder.svg"}
                   alt={deal.name}
                   className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-500"
                 />
@@ -99,12 +127,12 @@ const BigDeals = () => {
                   {deal.name}
                 </h3>
 
-                <p className="text-sm text-gray-600 mb-3">{deal.description}</p>
+                {/* <p className="text-sm text-gray-600 mb-3">{deal.description}</p> */}
 
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center space-x-2">
-                    <span className="text-lg text-gray-500 line-through">${deal.originalPrice}</span>
-                    <span className="text-2xl font-bold text-red-500">${deal.discountedPrice}</span>
+                    <span className="text-lg text-gray-500 line-through">${deal.price}</span>
+                    <span className="text-2xl font-bold text-red-500">${deal.price-2}</span>
                   </div>
                 </div>
 

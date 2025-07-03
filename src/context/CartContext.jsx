@@ -59,7 +59,7 @@ export const CartProvider = ({ children }) => {
   }
 
   const getTotalPrice = () => {
-    return items.reduce((total, item) => total + item.discountedPrice * item.quantity, 0)
+    return items.reduce((total, item) => total + item.price * item.quantity, 0)
   }
 
   const clearCart = () => {

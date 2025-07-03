@@ -593,7 +593,7 @@ export default function MenuPage() {
                 >
                   <option value="">Select Category</option>
                   {categories.map((category) => (
-                    <option key={category.id} value={category.name}>
+                    <option key={category.id} value={category.value}>
                       {category.name}
                     </option>
                   ))}
@@ -735,7 +735,7 @@ export default function MenuPage() {
                 >
                   <option value="">Select Category</option>
                   {categories.map((category) => (
-                    <option key={category.id} value={category.name}>
+                    <option key={category.id} value={category.value}>
                       {category.name}
                     </option>
                   ))}

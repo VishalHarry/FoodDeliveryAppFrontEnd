@@ -1,53 +1,34 @@
 "use client"
+import { useEffect, useState } from "react"
 import { useCart } from "../context/CartContext"
+import axios from "axios"
+import { useNavigate } from "react-router-dom"
 
 const PopularDishes = () => {
   const { addToCart } = useCart()
+  const [dishes,setDishes]=useState([]);
+  const navigate=useNavigate()
 
-  const dishes = [
-    {
-      id: 1,
-      name: "Margherita Pizza",
-      image: "/placeholder.svg?height=300&width=300",
-      originalPrice: 18.99,
-      discountedPrice: 14.99,
-    },
-    {
-      id: 2,
-      name: "Chicken Burger",
-      image: "/placeholder.svg?height=300&width=300",
-      originalPrice: 12.99,
-      discountedPrice: 9.99,
-    },
-    {
-      id: 3,
-      name: "Pasta Carbonara",
-      image: "/placeholder.svg?height=300&width=300",
-      originalPrice: 16.99,
-      discountedPrice: 13.99,
-    },
-    {
-      id: 4,
-      name: "Caesar Salad",
-      image: "/placeholder.svg?height=300&width=300",
-      originalPrice: 11.99,
-      discountedPrice: 8.99,
-    },
-    {
-      id: 5,
-      name: "Sushi Roll",
-      image: "/placeholder.svg?height=300&width=300",
-      originalPrice: 22.99,
-      discountedPrice: 18.99,
-    },
-    {
-      id: 6,
-      name: "Chocolate Cake",
-      image: "/placeholder.svg?height=300&width=300",
-      originalPrice: 8.99,
-      discountedPrice: 6.99,
-    },
-  ]
+
+  useEffect(()=>{
+    const fetchData= async ()=>{
+      try {
+        const response= await axios.get("http://localhost:8080/api/foods/getFoods")
+        if (response.data && response.data.length > 0) {
+          setDishes(response.data);
+          console.log("Dishes fetched successfully:", response.data);
+          
+        } else {
+          console.warn("No dishes found in the response");
+        }
+      } catch (error) {
+        console.error("Error fetching dishes:", error);
+        
+      }
+    }
+    fetchData();
+
+  },[])
 
   return (
     <section className="py-16 bg-white">
@@ -60,15 +41,18 @@ const PopularDishes = () => {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          {dishes.map((dish, index) => (
+          {dishes.slice(3,9).map((dish, index) => (
             <div
               key={dish.id}
               className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 animate-in slide-in-from-bottom duration-1000"
               style={{ animationDelay: `${index * 100}ms` }}
             >
-              <div className="relative overflow-hidden rounded-t-2xl">
+              <div className="relative overflow-hidden rounded-t-2xl"
+              onClick={()=>navigate(`/product/${dish.id}`)}
+              >
+                
                 <img
-                  src={dish.image || "/placeholder.svg"}
+                  src={dish.imageUrl || "/placeholder.svg"}
                   alt={dish.name}
                   className="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-500"
                 />
@@ -80,8 +64,8 @@ const PopularDishes = () => {
                 </h3>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
-                    <span className="text-sm text-gray-500 line-through">${dish.originalPrice}</span>
-                    <span className="text-xl font-bold text-orange-500">${dish.discountedPrice}</span>
+                    <span className="text-sm text-gray-500 line-through">${dish.price}</span>
+                    <span className="text-xl font-bold text-orange-500">${dish.price-2}</span>
                   </div>
                   <button
                     onClick={() => addToCart(dish)}

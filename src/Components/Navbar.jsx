@@ -7,6 +7,7 @@ import { useCart } from "../context/CartContext"
 import { useAuth } from "../context/AuthProvider"
 import CartModal from "./CartModal"
 import AuthModal from "./AuthModal"
+import axios from "axios"
 
 const Navbar = () => {
   const [isCategoryOpen, setIsCategoryOpen] = useState(false)
@@ -24,21 +25,33 @@ const Navbar = () => {
   const moreRef = useRef(null)
   const userRef = useRef(null)
 
-  const categories = [
-    { id: 1, name: "Pizza", image: "/placeholder.svg?height=40&width=40", slug: "pizza" },
-    { id: 2, name: "Burgers", image: "/placeholder.svg?height=40&width=40", slug: "burgers" },
-    { id: 3, name: "Pasta", image: "/placeholder.svg?height=40&width=40", slug: "pasta" },
-    { id: 4, name: "Sushi", image: "/placeholder.svg?height=40&width=40", slug: "sushi" },
-    { id: 5, name: "Desserts", image: "/placeholder.svg?height=40&width=40", slug: "desserts" },
-    { id: 6, name: "Beverages", image: "/placeholder.svg?height=40&width=40", slug: "beverages" },
-  ]
-
+  
   const moreLinks = [
     { name: "About", href: "/about" },
     { name: "Contact", href: "/contact" },
     { name: "Privacy & Policy", href: "/privacy" },
     { name: "Blogs", href: "/blogs" },
   ]
+const [categories,setCategories]=useState([]);
+
+  useEffect(()=>{
+    const fetchdata= async ()=>{
+try {
+  const response= await axios.get("http://localhost:8080/api/category/getCategory")
+  const categoriesWithSlug = response.data.map((cat) => ({
+  ...cat,
+  slug: cat.name.toLowerCase().replace(/\s+/g, "-"), // 👈 naam ko slug me convert kiya
+}));
+setCategories(categoriesWithSlug);
+console.log(categoriesWithSlug);
+  
+} catch (error) {
+  console.log("Error fetching categories:", error);
+  
+}
+}
+fetchdata();
+  },[])
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -105,22 +118,26 @@ const Navbar = () => {
                 </button>
 
                 {isCategoryOpen && (
-                  <div className="absolute top-full left-0 mt-2 w-64 bg-white rounded-lg shadow-xl border border-gray-100 py-2 animate-in slide-in-from-top-2 duration-200">
-                    {categories.map((category) => (
-                      <button
-                        key={category.id}
-                        onClick={() => handleCategoryClick(category.slug)}
-                        className="flex items-center space-x-3 px-4 py-3 hover:bg-gray-50 transition-colors duration-150 w-full text-left"
-                      >
-                        <img
-                          src={category.image || "/placeholder.svg"}
-                          alt={category.name}
-                          className="w-8 h-8 rounded-full object-cover"
-                        />
-                        <span className="text-gray-700 hover:text-orange-500">{category.name}</span>
-                      </button>
-                    ))}
+                  <div className="absolute top-full left-0 mt-2  w-[500px] bg-white rounded-lg shadow-xl border border-gray-100 py-2 animate-in slide-in-from-top-2 duration-200">
+                    <div className="grid grid-cols-3 gap-2">
+                      {categories.map((category) => (
+                        <button
+                          key={category.id}
+                          onClick={() => handleCategoryClick(category.slug)}
+                          className="flex items-center space-x-3 px-4 py-3 hover:bg-gray-50 transition-colors duration-150 w-full text-left"
+                        >
+                          <img
+                            src={category.imageUrl || "/placeholder.svg"}
+                            alt={category.name}
+                            className="w-8 h-8 rounded-full object-cover"
+                          />
+                          <span className="text-gray-700 hover:text-orange-500">{category.name}</span>
+                        </button>
+                      ))}
+                    </div>
                   </div>
+
+
                 )}
               </div>
 

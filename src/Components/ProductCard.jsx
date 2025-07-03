@@ -33,7 +33,7 @@ const ProductCard = ({ product, onAddToCart, animationDelay = 0 }) => {
       <div className="relative overflow-hidden rounded-t-2xl">
         <Link to={`/product/${product.id}`}>
           <img
-            src={product.image || "/placeholder.svg"}
+            src={product.imageUrl || "/placeholder.svg"}
             alt={product.name}
             className="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-500 cursor-pointer"
           />
@@ -42,11 +42,11 @@ const ProductCard = ({ product, onAddToCart, animationDelay = 0 }) => {
 
         {/* Vegetarian/Non-Vegetarian Indicator */}
         <div className="absolute top-3 left-3">
-          <div
+          {/* <div
             className={`w-4 h-4 rounded-full border-2 ${product.vegetarian ? "border-green-500 bg-green-100" : "border-red-500 bg-red-100"}`}
-          >
-            <div className={`w-2 h-2 rounded-full m-0.5 ${product.vegetarian ? "bg-green-500" : "bg-red-500"}`}></div>
-          </div>
+          > */}
+            {/* <div className={`w-2 h-2 rounded-full m-0.5 ${product.vegetarian ? "bg-green-500" : "bg-red-500"}`}></div> */}
+          {/* </div> */}
         </div>
       </div>
 
@@ -69,13 +69,13 @@ const ProductCard = ({ product, onAddToCart, animationDelay = 0 }) => {
         {/* Price */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center space-x-2">
-            <span className="text-sm text-gray-500 line-through">${product.originalPrice}</span>
-            <span className="text-xl font-bold text-orange-500">${product.discountedPrice}</span>
+            <span className="text-sm text-gray-500 line-through">${product.price}</span>
+            <span className="text-xl font-bold text-orange-500">${product.price-2}</span>
           </div>
         </div>
 
         {/* Variants */}
-        {product.variants && product.variants.length > 0 && (
+        {/* {product.variants && product.variants.length > 0 && (
           <div className="mb-4 space-y-2">
             {product.variants.map((variant) => (
               <div key={variant.name}>
@@ -94,7 +94,7 @@ const ProductCard = ({ product, onAddToCart, animationDelay = 0 }) => {
               </div>
             ))}
           </div>
-        )}
+        )} */}
 
         {/* Add to Cart Button */}
         <button

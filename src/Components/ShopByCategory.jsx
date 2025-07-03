@@ -1,19 +1,37 @@
+import axios from "axios";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+
 const ShopByCategory = () => {
-  const categories = [
-    { id: 1, name: "Pizza", image: "/placeholder.svg?height=150&width=150", color: "from-red-400 to-red-600" },
-    { id: 2, name: "Burgers", image: "/placeholder.svg?height=150&width=150", color: "from-yellow-400 to-orange-600" },
-    { id: 3, name: "Pasta", image: "/placeholder.svg?height=150&width=150", color: "from-green-400 to-green-600" },
-    { id: 4, name: "Sushi", image: "/placeholder.svg?height=150&width=150", color: "from-blue-400 to-blue-600" },
-    { id: 5, name: "Desserts", image: "/placeholder.svg?height=150&width=150", color: "from-pink-400 to-pink-600" },
-    {
-      id: 6,
-      name: "Beverages",
-      image: "/placeholder.svg?height=150&width=150",
-      color: "from-purple-400 to-purple-600",
-    },
-    { id: 7, name: "Salads", image: "/placeholder.svg?height=150&width=150", color: "from-emerald-400 to-emerald-600" },
-    { id: 8, name: "Seafood", image: "/placeholder.svg?height=150&width=150", color: "from-cyan-400 to-cyan-600" },
-  ]
+  
+
+
+ const [categories,setCategories]=useState([]);
+   const navigate = useNavigate()
+
+  useEffect(()=>{
+    const fetchdata= async ()=>{
+try {
+  const response= await axios.get("http://localhost:8080/api/category/getCategory")
+  const categoriesWithSlug = response.data.map((cat) => ({
+  ...cat,
+  slug: cat.name.toLowerCase().replace(/\s+/g, "-"), // 👈 naam ko slug me convert kiya
+}));
+setCategories(categoriesWithSlug);
+console.log(categoriesWithSlug);
+  
+} catch (error) {
+  console.log("Error fetching categories:", error);
+  
+}
+}
+fetchdata();
+  },[])
+
+   const handleCategoryClick = (categorySlug) => {
+    navigate(`/category/${categorySlug}`)
+    setIsCategoryOpen(false)
+  }
 
   return (
     <section className="py-16 bg-gray-50">
@@ -26,11 +44,12 @@ const ShopByCategory = () => {
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
-          {categories.map((category, index) => (
+          {categories.slice(0,8).map((category, index) => (
             <div
               key={category.id}
               className="group text-center animate-in slide-in-from-bottom duration-1000"
               style={{ animationDelay: `${index * 100}ms` }}
+              onClick={() => handleCategoryClick(category.slug)}
             >
               <div className="relative mb-4">
                 <div
@@ -38,9 +57,9 @@ const ShopByCategory = () => {
                 >
                   <div className="w-full h-full rounded-full bg-white flex items-center justify-center">
                     <img
-                      src={category.image || "/placeholder.svg"}
+                      src={category.imageUrl || "/placeholder.svg"}
                       alt={category.name}
-                      className="w-16 h-16 object-cover rounded-full"
+                      className="w-full h-full object-cover rounded-full"
                     />
                   </div>
                 </div>

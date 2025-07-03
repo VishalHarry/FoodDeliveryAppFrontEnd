@@ -62,7 +62,7 @@ const CartModal = ({ isOpen, onClose }) => {
                   {items.map((item) => (
                     <div key={item.cartId} className="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg">
                       <img
-                        src={item.image || "/placeholder.svg"}
+                        src={item.imageUrl || "/placeholder.svg"}
                         alt={item.name}
                         className="w-16 h-16 object-cover rounded-lg"
                       />
@@ -75,7 +75,7 @@ const CartModal = ({ isOpen, onClose }) => {
                               .join(", ")}
                           </p>
                         )}
-                        <p className="text-orange-500 font-semibold">${item.discountedPrice}</p>
+                        <p className="text-orange-500 font-semibold">${item.price}</p>
                       </div>
                       <div className="flex items-center space-x-2">
                         <button

@@ -1,48 +1,39 @@
 "use client"
 import { Star } from "lucide-react"
 import { useCart } from "../context/CartContext"
+import axios from "axios"
+import { useEffect, useState } from "react"
+import { useNavigate } from "react-router-dom"
 
 const TopPicks = () => {
   const { addToCart } = useCart()
 
-  const topPicks = [
-    {
-      id: 1,
-      name: "Gourmet Pizza Supreme",
-      image: "/placeholder.svg?height=300&width=300",
-      originalPrice: 26.99,
-      discountedPrice: 21.99,
-      rating: 4.8,
-      discount: 18,
-    },
-    {
-      id: 2,
-      name: "Artisan Burger Deluxe",
-      image: "/placeholder.svg?height=300&width=300",
-      originalPrice: 19.99,
-      discountedPrice: 15.99,
-      rating: 4.9,
-      discount: 20,
-    },
-    {
-      id: 3,
-      name: "Signature Ramen Bowl",
-      image: "/placeholder.svg?height=300&width=300",
-      originalPrice: 17.99,
-      discountedPrice: 13.99,
-      rating: 4.7,
-      discount: 22,
-    },
-    {
-      id: 4,
-      name: "Mediterranean Platter",
-      image: "/placeholder.svg?height=300&width=300",
-      originalPrice: 23.99,
-      discountedPrice: 18.99,
-      rating: 4.6,
-      discount: 21,
-    },
-  ]
+ 
+
+   const [dishes, setDishes] = useState([])
+  const navigate=useNavigate();
+
+  
+  useEffect(()=>{
+    const fetchData= async ()=>{
+      try {
+        const response= await axios.get("http://localhost:8080/api/foods/getFoods")
+        if (response.data && response.data.length > 0) {
+          setDishes(response.data);
+          console.log("Dishes fetched successfully:", response.data);
+          
+        } else {
+          console.warn("No dishes found in the response");
+        }
+      } catch (error) {
+        console.error("Error fetching dishes:", error);
+        
+      }
+    }
+    fetchData();
+
+  },[])
+
 
   return (
     <section className="py-16 bg-gradient-to-br from-orange-50 to-red-50">
@@ -55,15 +46,17 @@ const TopPicks = () => {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-          {topPicks.map((item, index) => (
+          {dishes.slice(5,9).map((item, index) => (
             <div
               key={item.id}
               className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-3 hover:rotate-1 animate-in slide-in-from-bottom duration-1000"
               style={{ animationDelay: `${index * 150}ms` }}
             >
-              <div className="relative overflow-hidden rounded-t-2xl">
+              <div className="relative overflow-hidden rounded-t-2xl"
+              onClick={()=>navigate(`/product/${item.id}`)}
+              >
                 <img
-                  src={item.image || "/placeholder.svg"}
+                  src={item.imageUrl || "/placeholder.svg"}
                   alt={item.name}
                   className="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-500"
                 />
@@ -84,8 +77,8 @@ const TopPicks = () => {
                 </h3>
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center space-x-2">
-                    <span className="text-sm text-gray-500 line-through">${item.originalPrice}</span>
-                    <span className="text-2xl font-bold text-orange-500">${item.discountedPrice}</span>
+                    <span className="text-sm text-gray-500 line-through">${item.price}</span>
+                    <span className="text-2xl font-bold text-orange-500">${item.price-2}</span>
                   </div>
                 </div>
                 <button

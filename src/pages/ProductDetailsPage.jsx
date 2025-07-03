@@ -6,13 +6,11 @@ import { Star, ShoppingCart, Clock, Check, X, ChevronLeft, ChevronRight } from "
 import { useCart } from "../context/CartContext"
 import { useAuth } from "../context/AuthProvider"
 
-
 const ProductDetailsPage = () => {
   const { productId } = useParams()
   const { addToCart } = useCart()
   const { isAuthenticated } = useAuth()
   const [product, setProduct] = useState(null)
-  const [selectedVariants, setSelectedVariants] = useState({})
   const [selectedImage, setSelectedImage] = useState(0)
   const [quantity, setQuantity] = useState(1)
   const [isAdding, setIsAdding] = useState(false)
@@ -23,40 +21,52 @@ const ProductDetailsPage = () => {
     name: "",
   })
   const [similarProducts, setSimilarProducts] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
 
-  // Mock product data
-  const mockProduct = {
-    id: Number.parseInt(productId),
-    name: "Margherita Pizza",
-    images: [
-      "/placeholder.svg?height=500&width=500",
-      "/placeholder.svg?height=500&width=500",
-      "/placeholder.svg?height=500&width=500",
-    ],
-    description:
-      "A classic Italian pizza topped with fresh tomatoes, mozzarella cheese, and basil leaves. Made with our signature thin crust and baked to perfection in our wood-fired oven.",
-    rating: 4.5,
-    totalReviews: 128,
-    originalPrice: 18.99,
-    discountedPrice: 14.99,
-    category: "pizza",
-    vegetarian: true,
-    eggless: true,
-    cuisine: "Italian",
-    spicyLevel: "Mild",
-    inStock: true,
-    deliveryTime: "25-30 mins",
-    ingredients: ["Fresh Tomatoes", "Mozzarella Cheese", "Fresh Basil", "Olive Oil", "Pizza Dough"],
-    nutritionalInfo: {
-      calories: 285,
-      protein: "12g",
-      carbs: "36g",
-      fat: "10g",
-    },
-    variants: [
-      { name: "Size", options: ["Small", "Medium", "Large"], prices: [0, 3, 6] },
-      { name: "Crust", options: ["Thin", "Thick", "Stuffed"], prices: [0, 2, 4] },
-    ],
+  // Hard-coded data for additional product information
+  const getHardCodedData = (productName) => {
+    // Default hard-coded data that can be customized based on product name
+    const defaultData = {
+      images: [
+        "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?height=500&width=500",
+        "https://images.unsplash.com/photo-1607532941433-304659e8198a?q=80&w=1078&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?height=500&width=500",
+        "https://images.unsplash.com/photo-1623855244183-52fd8d3ce2f7?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?height=500&width=500",
+      ],
+      rating: 4.5,
+      totalReviews: 128,
+      originalPrice: null, // Will be calculated as price * 1.25
+      vegetarian: true,
+      eggless: true,
+      cuisine: "Asian",
+      spicyLevel: "Mild",
+      deliveryTime: "25-30 mins",
+      ingredients: ["Fresh Ingredients", "Special Spices", "Premium Quality"],
+      nutritionalInfo: {
+        calories: 285,
+        protein: "12g",
+        carbs: "36g",
+        fat: "10g",
+      },
+    }
+
+    // Customize based on product name or category
+    if (productName.toLowerCase().includes('pizza')) {
+      return {
+        ...defaultData,
+        cuisine: "Italian",
+        ingredients: ["Fresh Tomatoes", "Mozzarella Cheese", "Fresh Basil", "Olive Oil", "Pizza Dough"],
+      }
+    } else if (productName.toLowerCase().includes('spring')) {
+      return {
+        ...defaultData,
+        cuisine: "Asian",
+        ingredients: ["Fresh Vegetables", "Wrapper", "Soy Sauce", "Sesame Oil"],
+        spicyLevel: "Mild",
+      }
+    }
+
+    return defaultData
   }
 
   const mockReviews = [
@@ -65,7 +75,7 @@ const ProductDetailsPage = () => {
       user: "John Doe",
       avatar: "/placeholder.svg?height=40&width=40",
       rating: 5,
-      comment: "Absolutely delicious! The crust was perfect and the toppings were fresh.",
+      comment: "Absolutely delicious! Fresh ingredients and perfect preparation.",
       date: "2024-01-15",
       images: ["/placeholder.svg?height=100&width=100"],
     },
@@ -74,7 +84,7 @@ const ProductDetailsPage = () => {
       user: "Sarah Smith",
       avatar: "/placeholder.svg?height=40&width=40",
       rating: 4,
-      comment: "Great pizza, but could use a bit more cheese. Overall very satisfied!",
+      comment: "Great taste and quick delivery. Will order again!",
       date: "2024-01-10",
       images: [],
     },
@@ -83,7 +93,7 @@ const ProductDetailsPage = () => {
       user: "Mike Johnson",
       avatar: "/placeholder.svg?height=40&width=40",
       rating: 5,
-      comment: "Best pizza in town! Fast delivery and amazing taste.",
+      comment: "Best food delivery service! Amazing quality.",
       date: "2024-01-08",
       images: [],
     },
@@ -92,7 +102,7 @@ const ProductDetailsPage = () => {
   const mockSimilarProducts = [
     {
       id: 2,
-      name: "Pepperoni Pizza",
+      name: "Chicken Spring Rolls",
       image: "/placeholder.svg?height=200&width=200",
       rating: 4.7,
       originalPrice: 22.99,
@@ -100,7 +110,7 @@ const ProductDetailsPage = () => {
     },
     {
       id: 3,
-      name: "Veggie Supreme Pizza",
+      name: "Veggie Dumplings",
       image: "/placeholder.svg?height=200&width=200",
       rating: 4.3,
       originalPrice: 20.99,
@@ -108,7 +118,7 @@ const ProductDetailsPage = () => {
     },
     {
       id: 4,
-      name: "BBQ Chicken Pizza",
+      name: "Chicken Momos",
       image: "/placeholder.svg?height=200&width=200",
       rating: 4.6,
       originalPrice: 24.99,
@@ -116,40 +126,61 @@ const ProductDetailsPage = () => {
     },
   ]
 
-  useEffect(() => {
-    // Simulate API calls
-    setProduct(mockProduct)
-    setReviews(mockReviews)
-    setSimilarProducts(mockSimilarProducts)
-
-    // Initialize selected variants
-    const initialVariants = {}
-    mockProduct.variants.forEach((variant) => {
-      initialVariants[variant.name] = variant.options[0]
-    })
-    setSelectedVariants(initialVariants)
-  }, [productId])
-
-  const handleVariantChange = (variantName, option) => {
-    setSelectedVariants((prev) => ({
-      ...prev,
-      [variantName]: option,
-    }))
+  // Fetch product data from API
+  const fetchProduct = async () => {
+    try {
+      setLoading(true)
+      // Replace this URL with your actual API endpoint
+      const response = await fetch(`http://localhost:8080/api/foods/${productId}`)
+      
+      if (!response.ok) {
+        throw new Error('Product not found')
+      }
+      
+      const productData = await response.json()
+      
+      // Combine dynamic data with hard-coded data
+      const hardCodedData = getHardCodedData(productData.name)
+      const combinedProduct = {
+        id: productData.id || productData._id,
+        name: productData.name,
+        description: productData.description,
+        price: productData.price,
+        category: productData.category,
+        inStock: productData.available,
+        // Use product image if available, otherwise use hard-coded images
+        images: productData.imageUrl ? [productData.imageUrl, ...hardCodedData.images.slice(1)] : hardCodedData.images,
+        // Calculate original price (25% higher than current price)
+        originalPrice: Math.round(productData.price * 1.25),
+        discountedPrice: productData.price,
+        // Merge with hard-coded data
+        ...hardCodedData,
+      }
+      
+      setProduct(combinedProduct)
+      console.log("API Response productData:", productData)
+      console.log("Combined Product Data:", combinedProduct)
+      setError(null)
+    } catch (err) {
+      setError(err.message)
+      console.error('Error fetching product:', err)
+    } finally {
+      setLoading(false)
+    }
   }
+
+  useEffect(() => {
+    if (productId) {
+      fetchProduct()
+      // Set hard-coded reviews and similar products
+      setReviews(mockReviews)
+      setSimilarProducts(mockSimilarProducts)
+    }
+  }, [productId])
 
   const calculatePrice = () => {
     if (!product) return 0
-
-    let additionalPrice = 0
-    product.variants.forEach((variant) => {
-      const selectedOption = selectedVariants[variant.name]
-      const optionIndex = variant.options.indexOf(selectedOption)
-      if (optionIndex > 0 && variant.prices) {
-        additionalPrice += variant.prices[optionIndex]
-      }
-    })
-
-    return (product.discountedPrice + additionalPrice) * quantity
+    return product.discountedPrice * quantity
   }
 
   const handleAddToCart = async () => {
@@ -157,7 +188,7 @@ const ProductDetailsPage = () => {
     await new Promise((resolve) => setTimeout(resolve, 500))
 
     for (let i = 0; i < quantity; i++) {
-      addToCart(product, selectedVariants)
+      addToCart(product, {}) // No variants, so pass empty object
     }
 
     setIsAdding(false)
@@ -184,6 +215,31 @@ const ProductDetailsPage = () => {
     setNewReview({ rating: 5, comment: "", name: "" })
   }
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-orange-500"></div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">Product Not Found</h2>
+          <p className="text-gray-600 mb-4">{error}</p>
+          <Link 
+            to="/" 
+            className="bg-orange-500 text-white px-6 py-2 rounded-lg hover:bg-orange-600 transition-colors duration-200"
+          >
+            Go Back Home
+          </Link>
+        </div>
+      </div>
+    )
+  }
+
   if (!product) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -203,10 +259,10 @@ const ProductDetailsPage = () => {
             </Link>
             <span className="text-gray-400">/</span>
             <Link
-              to={`/category/${product.category}`}
+              to={`/category/${product.category?.toLowerCase()}`}
               className="text-gray-500 hover:text-orange-500 transition-colors duration-200"
             >
-              {product.category.charAt(0).toUpperCase() + product.category.slice(1)}
+              {product.category}
             </Link>
             <span className="text-gray-400">/</span>
             <span className="text-gray-800 font-medium">{product.name}</span>
@@ -287,8 +343,8 @@ const ProductDetailsPage = () => {
 
               {/* Price */}
               <div className="flex items-center space-x-3 mb-4">
-                <span className="text-2xl text-gray-500 line-through">${product.originalPrice}</span>
-                <span className="text-3xl font-bold text-orange-500">${calculatePrice().toFixed(2)}</span>
+                <span className="text-2xl text-gray-500 line-through">₹{product.price}</span>
+                <span className="text-3xl font-bold text-orange-500">₹{calculatePrice().toFixed(2)-2}</span>
               </div>
 
               {/* Stock Status */}
@@ -318,35 +374,6 @@ const ProductDetailsPage = () => {
               <h3 className="text-lg font-semibold mb-2">Description</h3>
               <p className="text-gray-600 leading-relaxed">{product.description}</p>
             </div>
-
-            {/* Variants */}
-            {product.variants && product.variants.length > 0 && (
-              <div className="space-y-4">
-                {product.variants.map((variant) => (
-                  <div key={variant.name}>
-                    <label className="block text-lg font-semibold text-gray-700 mb-2">{variant.name}</label>
-                    <div className="grid grid-cols-3 gap-2">
-                      {variant.options.map((option, index) => (
-                        <button
-                          key={option}
-                          onClick={() => handleVariantChange(variant.name, option)}
-                          className={`p-3 border rounded-lg text-center transition-all duration-200 ${
-                            selectedVariants[variant.name] === option
-                              ? "border-orange-500 bg-orange-50 text-orange-700"
-                              : "border-gray-300 hover:border-gray-400"
-                          }`}
-                        >
-                          <div className="font-medium">{option}</div>
-                          {variant.prices && variant.prices[index] > 0 && (
-                            <div className="text-sm text-gray-500">+${variant.prices[index]}</div>
-                          )}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
 
             {/* Quantity */}
             <div>
@@ -379,7 +406,7 @@ const ProductDetailsPage = () => {
               }`}
             >
               <ShoppingCart className="w-6 h-6" />
-              <span>{isAdding ? "Adding..." : `Add to Cart - $${calculatePrice().toFixed(2)}`}</span>
+              <span>{isAdding ? "Adding..." : `Add to Cart - ₹${calculatePrice().toFixed(2)}`}</span>
             </button>
 
             {/* Ingredients */}
@@ -445,8 +472,8 @@ const ProductDetailsPage = () => {
                     <span className="ml-1 text-sm text-gray-600">{similarProduct.rating}</span>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <span className="text-sm text-gray-500 line-through">${similarProduct.originalPrice}</span>
-                    <span className="text-lg font-bold text-orange-500">${similarProduct.discountedPrice}</span>
+                    <span className="text-sm text-gray-500 line-through">₹{similarProduct.originalPrice}</span>
+                    <span className="text-lg font-bold text-orange-500">₹{similarProduct.discountedPrice}</span>
                   </div>
                 </div>
               </Link>

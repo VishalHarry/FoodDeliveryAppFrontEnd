@@ -5,10 +5,11 @@ import { useParams, Link } from "react-router-dom"
 import { ChevronDown, Filter } from "lucide-react"
 import { useCart } from "../context/CartContext"
 import ProductCard from "../Components/ProductCard"
+import axios from "axios"
 
 
 const CategoryPage = () => {
-  const { categoryName } = useParams()
+  const {categoryName } = useParams()
   const { addToCart } = useCart()
   const [products, setProducts] = useState([])
   const [filteredProducts, setFilteredProducts] = useState([])
@@ -26,7 +27,7 @@ const CategoryPage = () => {
 
   // Mock product data
   const mockProducts = {
-    pizza: [
+    beverages: [
       {
         id: 1,
         name: "Margherita Pizza",
@@ -35,7 +36,7 @@ const CategoryPage = () => {
         reviews: 128,
         originalPrice: 18.99,
         discountedPrice: 14.99,
-        category: "pizza",
+        category: "appetizers",
         vegetarian: true,
         eggless: true,
         cuisine: "Italian",
@@ -56,7 +57,7 @@ const CategoryPage = () => {
         category: "pizza",
         vegetarian: false,
         eggless: false,
-        cuisine: "Italian",
+        cuisine: "beverages",
         spicyLevel: "Medium",
         variants: [
           { name: "Size", options: ["Small", "Medium", "Large"] },
@@ -121,6 +122,28 @@ const CategoryPage = () => {
       },
     ],
   }
+
+  // top par import
+
+useEffect(() => {
+  const fetchProducts = async () => {
+  try {
+    const response = await axios.get(`http://localhost:8080/api/foods/category/${categoryName}`);
+    console.log("Fetched products:", response.data);
+
+    const fetchedProducts = response.data;
+
+    setProducts(fetchedProducts);
+    setFilteredProducts(fetchedProducts);
+  } catch (error) {
+    console.error("Error fetching products:", error);
+  }
+};
+
+
+  fetchProducts();
+}, [categoryName]);
+
 
   useEffect(() => {
     // Simulate API call
@@ -196,16 +219,16 @@ const CategoryPage = () => {
       </div>
 
       {/* Category Header */}
-      <div className="bg-gradient-to-r from-orange-500 to-red-500 text-white py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4 animate-in slide-in-from-left duration-1000">
+      
+        <div className="max-w-7xl text-orange-600 mx-auto px-4 sm:px-6 lg:px-8">
+          <h1 className="text-4xl md:text-3xl font-bold  animate-in slide-in-from-left duration-1000 mt-2">
             {formatCategoryName(categoryName)}
           </h1>
           <p className="text-xl opacity-90 animate-in slide-in-from-left duration-1000 delay-200">
             Discover our delicious {categoryName} collection
           </p>
         </div>
-      </div>
+      
 
       {/* Filters and Products */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
